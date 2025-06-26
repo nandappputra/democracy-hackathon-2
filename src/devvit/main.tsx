@@ -246,42 +246,4 @@ Devvit.addMenuItem({
   },
 });
 
-// export default Devvit;
-
-// Devvit.addMenuItem({
-//   // Please update as you work on your idea!
-//   label: '[Bolt Word Guesser]: New Post',
-//   location: 'subreddit',
-//   forUserType: 'moderator',
-//   onPress: async (_event, context) => {
-//     const { reddit, ui } = context;
-
-//     let post: Post | undefined;
-//     try {
-//       const subreddit = await reddit.getCurrentSubreddit();
-//       post = await reddit.submitPost({
-//         // Title of the post. You'll want to update!
-//         title: 'Word Guesser',
-//         subredditName: subreddit.name,
-//         preview: <Preview />,
-//       });
-//       await postConfigNew({
-//         redis: context.redis,
-//         postId: post.id,
-//       });
-//       ui.showToast({ text: 'Created post!' });
-//       ui.navigateTo(post.url);
-//     } catch (error) {
-//       if (post) {
-//         await post.remove(false);
-//       }
-//       if (error instanceof Error) {
-//         ui.showToast({ text: `Error creating post: ${error.message}` });
-//       } else {
-//         ui.showToast({ text: 'Error creating post!' });
-//       }
-//     }
-//   },
-// });
-
 export default Devvit;
