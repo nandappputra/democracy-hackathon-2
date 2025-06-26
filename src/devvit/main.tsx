@@ -218,33 +218,33 @@ Devvit.addMenuItem({
 });
 
 // Menu item to create a webview post
-// Devvit.addMenuItem({
-//   label: '[Democracy Game] Create Game Dashboard',
-//   location: 'subreddit',
-//   forUserType: 'moderator',
-//   onPress: async (_event, context) => {
-//     const { reddit, ui } = context;
+Devvit.addMenuItem({
+  label: '[Nanda] Create Game Dashboard',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
 
-//     try {
-//       const subreddit = await reddit.getCurrentSubreddit();
+    try {
+      const subreddit = await reddit.getCurrentSubreddit();
       
-//       const post = await reddit.submitPost({
-//         title: '🏛️ Democracy Game Dashboard',
-//         subredditName: subreddit.name,
-//         preview: <Preview text="Interactive Game Dashboard" />,
-//       });
+      const post = await reddit.submitPost({
+        title: '🏛️ Democracy Game Dashboard',
+        subredditName: subreddit.name,
+        preview: <Preview text="Interactive Game Dashboard" />,
+      });
 
-//       ui.showToast({ text: 'Game dashboard created!' });
-//       ui.navigateTo(post.url);
+      ui.showToast({ text: 'Game dashboard created!' });
+      ui.navigateTo(post.url);
       
-//     } catch (error) {
-//       console.error('Error creating dashboard:', error);
-//       ui.showToast({ 
-//         text: `Error creating dashboard: ${error instanceof Error ? error.message : 'Unknown error'}` 
-//       });
-//     }
-//   },
-// });
+    } catch (error) {
+      console.error('Error creating dashboard:', error);
+      ui.showToast({ 
+        text: `Error creating dashboard: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      });
+    }
+  },
+});
 
 // export default Devvit;
 
