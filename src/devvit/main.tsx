@@ -194,7 +194,7 @@ Devvit.addMenuItem({
 
 // Menu item to manually process current day (for testing)
 Devvit.addMenuItem({
-  label: '[Democracy Game] Process Current Day',
+  label: '[Nanda] Process Current Day',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
