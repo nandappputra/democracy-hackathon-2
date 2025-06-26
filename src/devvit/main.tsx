@@ -147,7 +147,7 @@ Devvit.addSchedulerJob({
 
 // Menu item to start a new game
 Devvit.addMenuItem({
-  label: '[Democracy Game] Start New Game',
+  label: 'NANDA start new game!',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
