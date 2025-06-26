@@ -1,4 +1,15 @@
 import { Devvit, Post } from '@devvit/public-api';
+import { defineConfig } from '@devvit/server';
+import { getRedis } from '@devvit/redis';
+import { 
+  getGameState, 
+  setGameState, 
+  generateProblem, 
+  processSolution, 
+  applyDecisionImpact,
+  formatGameStateForPost,
+  getInitialGameState 
+} from '../server/core/democracy';
 
 // Side effect import to bundle the server. The /index is required for server splitting.
 import '../server/index';
