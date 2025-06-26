@@ -29,6 +29,12 @@ defineConfig({
   //   preview: <Preview />,
   // },
 });
+defineConfig({
+  name: 'NANDA\'s DEMOCRACY 2',
+  entry: 'index.html',
+  height: 'tall',
+  menu: { enable: false },
+});
 
 export const Preview: Devvit.BlockComponent<{ text?: string }> = ({ text = 'Loading...' }) => {
   return (
