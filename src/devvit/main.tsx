@@ -1,5 +1,4 @@
 import { Devvit, Post } from '@devvit/public-api';
-import { defineConfig } from '@devvit/server';
 import { getRedis } from '@devvit/redis';
 import { 
   getGameState, 
@@ -219,70 +218,70 @@ Devvit.addMenuItem({
 });
 
 // Menu item to create a webview post
-Devvit.addMenuItem({
-  label: '[Democracy Game] Create Game Dashboard',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
+// Devvit.addMenuItem({
+//   label: '[Democracy Game] Create Game Dashboard',
+//   location: 'subreddit',
+//   forUserType: 'moderator',
+//   onPress: async (_event, context) => {
+//     const { reddit, ui } = context;
 
-    try {
-      const subreddit = await reddit.getCurrentSubreddit();
+//     try {
+//       const subreddit = await reddit.getCurrentSubreddit();
       
-      const post = await reddit.submitPost({
-        title: '🏛️ Democracy Game Dashboard',
-        subredditName: subreddit.name,
-        preview: <Preview text="Interactive Game Dashboard" />,
-      });
+//       const post = await reddit.submitPost({
+//         title: '🏛️ Democracy Game Dashboard',
+//         subredditName: subreddit.name,
+//         preview: <Preview text="Interactive Game Dashboard" />,
+//       });
 
-      ui.showToast({ text: 'Game dashboard created!' });
-      ui.navigateTo(post.url);
+//       ui.showToast({ text: 'Game dashboard created!' });
+//       ui.navigateTo(post.url);
       
-    } catch (error) {
-      console.error('Error creating dashboard:', error);
-      ui.showToast({ 
-        text: `Error creating dashboard: ${error instanceof Error ? error.message : 'Unknown error'}` 
-      });
-    }
-  },
-});
+//     } catch (error) {
+//       console.error('Error creating dashboard:', error);
+//       ui.showToast({ 
+//         text: `Error creating dashboard: ${error instanceof Error ? error.message : 'Unknown error'}` 
+//       });
+//     }
+//   },
+// });
 
-export default Devvit;
+// export default Devvit;
 
-Devvit.addMenuItem({
-  // Please update as you work on your idea!
-  label: '[Bolt Word Guesser]: New Post',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
+// Devvit.addMenuItem({
+//   // Please update as you work on your idea!
+//   label: '[Bolt Word Guesser]: New Post',
+//   location: 'subreddit',
+//   forUserType: 'moderator',
+//   onPress: async (_event, context) => {
+//     const { reddit, ui } = context;
 
-    let post: Post | undefined;
-    try {
-      const subreddit = await reddit.getCurrentSubreddit();
-      post = await reddit.submitPost({
-        // Title of the post. You'll want to update!
-        title: 'Word Guesser',
-        subredditName: subreddit.name,
-        preview: <Preview />,
-      });
-      await postConfigNew({
-        redis: context.redis,
-        postId: post.id,
-      });
-      ui.showToast({ text: 'Created post!' });
-      ui.navigateTo(post.url);
-    } catch (error) {
-      if (post) {
-        await post.remove(false);
-      }
-      if (error instanceof Error) {
-        ui.showToast({ text: `Error creating post: ${error.message}` });
-      } else {
-        ui.showToast({ text: 'Error creating post!' });
-      }
-    }
-  },
-});
+//     let post: Post | undefined;
+//     try {
+//       const subreddit = await reddit.getCurrentSubreddit();
+//       post = await reddit.submitPost({
+//         // Title of the post. You'll want to update!
+//         title: 'Word Guesser',
+//         subredditName: subreddit.name,
+//         preview: <Preview />,
+//       });
+//       await postConfigNew({
+//         redis: context.redis,
+//         postId: post.id,
+//       });
+//       ui.showToast({ text: 'Created post!' });
+//       ui.navigateTo(post.url);
+//     } catch (error) {
+//       if (post) {
+//         await post.remove(false);
+//       }
+//       if (error instanceof Error) {
+//         ui.showToast({ text: `Error creating post: ${error.message}` });
+//       } else {
+//         ui.showToast({ text: 'Error creating post!' });
+//       }
+//     }
+//   },
+// });
 
 export default Devvit;
