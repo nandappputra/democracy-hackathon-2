@@ -17,19 +17,6 @@ import { defineConfig } from '@devvit/server';
 import { postConfigNew } from '../server/core/post';
 
 defineConfig({
-  name: '[Bolt] Word Guesser',
-  entry: 'index.html',
-  height: 'tall',
-  menu: { enable: false },
-  // TODO: Cannot use without ability to pass in more metadata
-  // menu: {
-  //   enable: true,
-  //   label: 'New Word Guesser Post',
-  //   postTitle: 'Word Guesser',
-  //   preview: <Preview />,
-  // },
-});
-defineConfig({
   name: 'NANDA\'s DEMOCRACY 2',
   entry: 'index.html',
   height: 'tall',
