@@ -53,7 +53,7 @@ export const generateProblem = async (
   nationState: NationState,
   lastDecisions: Decision[]
 ): Promise<GameProblem> => {
-  console.log(GEMINI_API_KEY);
+  console.log("API Key Kita", GEMINI_API_KEY);
   if (!GEMINI_API_KEY) {
     console.warn('GEMINI_API_KEY not found, using fallback problem generation');
     return generateFallbackProblem(nationState, lastDecisions);
