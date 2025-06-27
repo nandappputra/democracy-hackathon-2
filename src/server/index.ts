@@ -1,158 +1,172 @@
 import express from 'express';
-import { createServer, getContext, getServerPort } from '@devvit/server';
-import { CheckResponse, InitResponse, LetterState } from '../shared/types/game';
-import { postConfigGet, postConfigNew, postConfigMaybeGet } from './core/post';
-import { allWords } from './core/words';
+import { createServer, getServerPort } from '@devvit/server';
 import { getRedis } from '@devvit/redis';
+import { GameResponse, InitGameResponse, ProcessDayResponse } from '../shared/types/democracy';
+import {
+  getGameState,
+  setGameState,
+  generateProblem,
+  processSolution,
+  applyDecisionImpact,
+  getInitialGameState,
+} from './core/democracy';
 
 const app = express();
 
-// Middleware for JSON body parsing
 app.use(express.json());
-// Middleware for URL-encoded body parsing
 app.use(express.urlencoded({ extended: true }));
-// Middleware for plain text body parsing
 app.use(express.text());
 
 const router = express.Router();
 
-router.get<{ postId: string }, InitResponse | { status: string; message: string }>(
-  '/api/init',
+// Initialize or get current game state
+router.get<{}, GameResponse<InitGameResponse>>(
+  '/api/game/init',
   async (_req, res): Promise<void> => {
-    const { postId } = getContext();
-    const redis = getRedis();
-
-    if (!postId) {
-      console.error('API Init Error: postId not found in devvit context');
-      res.status(400).json({
-        status: 'error',
-        message: 'postId is required but missing from context',
-      });
-      return;
-    }
-
     try {
-      let config = await postConfigMaybeGet({ redis, postId });
-      if (!config || !config.wordOfTheDay) {
-        console.log(`No valid config found for post ${postId}, creating new one.`);
-        await postConfigNew({ redis: getRedis(), postId });
-        config = await postConfigGet({ redis, postId });
-      }
-
-      if (!config.wordOfTheDay) {
-        console.error(
-          `API Init Error: wordOfTheDay still not found for post ${postId} after attempting creation.`
-        );
-        throw new Error('Failed to initialize game configuration.');
-      }
+      const redis = getRedis();
+      const gameState = await getGameState(redis);
 
       res.json({
         status: 'success',
-        postId: postId,
+        gameState,
       });
     } catch (error) {
-      console.error(`API Init Error for post ${postId}:`, error);
-      const message =
-        error instanceof Error ? error.message : 'Unknown error during initialization';
-      res.status(500).json({ status: 'error', message });
+      console.error('Error initializing game:', error);
+      res.status(500).json({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   }
 );
 
-router.post<{ postId: string }, CheckResponse, { guess: string }>(
-  '/api/check',
-  async (req, res): Promise<void> => {
-    const { guess } = req.body;
-    const { postId, userId } = getContext();
-    const redis = getRedis();
+// Start a new game
+router.post<{}, GameResponse<InitGameResponse>>(
+  '/api/game/start',
+  async (_req, res): Promise<void> => {
+    try {
+      const redis = getRedis();
+      const gameState = getInitialGameState();
 
-    if (!postId) {
-      res.status(400).json({ status: 'error', message: 'postId is required' });
-      return;
-    }
-    if (!userId) {
-      res.status(400).json({ status: 'error', message: 'Must be logged in' });
-      return;
-    }
-    if (!guess) {
-      res.status(400).json({ status: 'error', message: 'Guess is required' });
-      return;
-    }
+      // Generate first problem
+      const firstProblem = await generateProblem(gameState.nationState, []);
+      gameState.currentProblem = firstProblem;
+      gameState.gameStarted = true;
 
-    const config = await postConfigGet({ redis, postId });
-    const { wordOfTheDay } = config;
+      await setGameState(redis, gameState);
 
-    const normalizedGuess = guess.toLowerCase();
-
-    if (normalizedGuess.length !== 5) {
-      res.status(400).json({ status: 'error', message: 'Guess must be 5 letters long' });
-      return;
-    }
-
-    const wordExists = allWords.includes(normalizedGuess);
-
-    if (!wordExists) {
       res.json({
         status: 'success',
-        exists: false,
-        solved: false,
-        correct: Array(5).fill('initial') as [
-          LetterState,
-          LetterState,
-          LetterState,
-          LetterState,
-          LetterState,
-        ],
+        gameState,
       });
-      return;
+    } catch (error) {
+      console.error('Error starting game:', error);
+      res.status(500).json({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
-
-    const answerLetters = wordOfTheDay.split('');
-    const resultCorrect: LetterState[] = Array(5).fill('initial');
-    let solved = true;
-    const guessLetters = normalizedGuess.split('');
-
-    for (let i = 0; i < 5; i++) {
-      if (guessLetters[i] === answerLetters[i]) {
-        resultCorrect[i] = 'correct';
-        answerLetters[i] = '';
-      } else {
-        solved = false;
-      }
-    }
-
-    for (let i = 0; i < 5; i++) {
-      if (resultCorrect[i] === 'initial') {
-        const guessedLetter = guessLetters[i]!;
-        const presentIndex = answerLetters.indexOf(guessedLetter);
-        if (presentIndex !== -1) {
-          resultCorrect[i] = 'present';
-          answerLetters[presentIndex] = '';
-        }
-      }
-    }
-
-    for (let i = 0; i < 5; i++) {
-      if (resultCorrect[i] === 'initial') {
-        resultCorrect[i] = 'absent';
-      }
-    }
-
-    res.json({
-      status: 'success',
-      exists: true,
-      solved,
-      correct: resultCorrect as [LetterState, LetterState, LetterState, LetterState, LetterState],
-    });
   }
 );
 
-// Use router middleware
+// Process a day (this would be called by the scheduler)
+router.post<{}, GameResponse<ProcessDayResponse>, { solution?: string }>(
+  '/api/game/process-day',
+  async (req, res): Promise<void> => {
+    try {
+      const { solution } = req.body;
+      const redis = getRedis();
+      const gameState = await getGameState(redis);
+
+      if (!gameState.currentProblem) {
+        res.status(400).json({
+          status: 'error',
+          message: 'No current problem to process',
+        });
+        return;
+      }
+
+      if (!solution) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Solution is required',
+        });
+        return;
+      }
+
+      // Process the solution
+      const decision = await processSolution(
+        solution,
+        gameState.nationState,
+        gameState.currentProblem,
+        gameState.lastDecisions
+      );
+
+      // Apply the decision impact
+      gameState.nationState = applyDecisionImpact(gameState.nationState, decision);
+
+      // Add decision to history (keep only last 10)
+      gameState.lastDecisions.push(decision);
+      if (gameState.lastDecisions.length > 10) {
+        gameState.lastDecisions = gameState.lastDecisions.slice(-10);
+      }
+
+      // Generate next problem if game is not over
+      if (!gameState.nationState.isGameOver) {
+        gameState.currentProblem = await generateProblem(
+          gameState.nationState,
+          gameState.lastDecisions
+        );
+      } else {
+        gameState.currentProblem = null;
+        gameState.gameStarted = false;
+      }
+
+      gameState.lastProcessedDay = gameState.nationState.day - 1;
+
+      await setGameState(redis, gameState);
+
+      res.json({
+        status: 'success',
+        success: true,
+        newState: gameState,
+      });
+    } catch (error) {
+      console.error('Error processing day:', error);
+      res.status(500).json({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+);
+
+// Get current game state
+router.get<{}, GameResponse<{ gameState: any }>>(
+  '/api/game/state',
+  async (_req, res): Promise<void> => {
+    try {
+      const redis = getRedis();
+      const gameState = await getGameState(redis);
+
+      res.json({
+        status: 'success',
+        gameState,
+      });
+    } catch (error) {
+      console.error('Error getting game state:', error);
+      res.status(500).json({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+);
+
 app.use(router);
 
-// Get port from environment variable with fallback
 const port = getServerPort();
-
 const server = createServer(app);
 server.on('error', (err) => console.error(`server error; ${err.stack}`));
-server.listen(port, () => console.log(`http://localhost:${port}`));
+server.listen(port, () => console.log(`Democracy Game server running on http://localhost:${port}`));

@@ -21,12 +21,12 @@ const Banner = () => {
   );
 };
 
-const StatCard: React.FC<{ title: string; value: number | string; icon: string; color: string }> = ({
-  title,
-  value,
-  icon,
-  color,
-}) => (
+const StatCard: React.FC<{
+  title: string;
+  value: number | string;
+  icon: string;
+  color: string;
+}> = ({ title, value, icon, color }) => (
   <div className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${color}`}>
     <div className="flex items-center justify-between">
       <div>
@@ -48,7 +48,7 @@ export const DemocracyGame: React.FC = () => {
       setLoading(true);
       const response = await fetch('/api/game/init');
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         setGameState(data.gameState);
         setError(null);
@@ -73,7 +73,7 @@ export const DemocracyGame: React.FC = () => {
         },
       });
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         setGameState(data.gameState);
         setError(null);
@@ -136,13 +136,11 @@ export const DemocracyGame: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Banner />
-      
+
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            🏛️ The Nation of Democracy
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">🏛️ The Nation of Democracy</h1>
           <p className="text-xl text-gray-600">Day {nationState.day}</p>
           {nationState.isGameOver && (
             <div className="mt-4 p-4 bg-red-100 border border-red-400 rounded-lg">
@@ -188,11 +186,10 @@ export const DemocracyGame: React.FC = () => {
             </h2>
             <p className="text-gray-700 text-lg mb-4">{currentProblem.description}</p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-blue-800 font-semibold">
-                💡 What should the nation do?
-              </p>
+              <p className="text-blue-800 font-semibold">💡 What should the nation do?</p>
               <p className="text-blue-700">
-                Visit the subreddit and comment your solution. The most upvoted solution will be implemented!
+                Visit the subreddit and comment your solution. The most upvoted solution will be
+                implemented!
               </p>
             </div>
           </div>
@@ -203,45 +200,68 @@ export const DemocracyGame: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">📜 Recent Decisions</h2>
             <div className="space-y-4">
-              {lastDecisions.slice(-5).reverse().map((decision, index) => (
-                <div key={index} className="border-l-4 border-gray-300 pl-4">
-                  <h3 className="font-semibold text-gray-900">
-                    Day {decision.day}: {decision.problem}
-                  </h3>
-                  <p className="text-gray-700 italic">Solution: {decision.solution}</p>
-                  <p className="text-gray-600">Outcome: {decision.outcome}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {decision.impact.population !== 0 && (
-                      <span className={`px-2 py-1 rounded text-sm ${
-                        decision.impact.population > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        👥 {decision.impact.population > 0 ? '+' : ''}{decision.impact.population}
-                      </span>
-                    )}
-                    {decision.impact.gold !== 0 && (
-                      <span className={`px-2 py-1 rounded text-sm ${
-                        decision.impact.gold > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        💰 {decision.impact.gold > 0 ? '+' : ''}{decision.impact.gold}
-                      </span>
-                    )}
-                    {decision.impact.happiness !== 0 && (
-                      <span className={`px-2 py-1 rounded text-sm ${
-                        decision.impact.happiness > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        😊 {decision.impact.happiness > 0 ? '+' : ''}{decision.impact.happiness}
-                      </span>
-                    )}
-                    {decision.impact.foodSurplus !== 0 && (
-                      <span className={`px-2 py-1 rounded text-sm ${
-                        decision.impact.foodSurplus > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        🌾 {decision.impact.foodSurplus > 0 ? '+' : ''}{decision.impact.foodSurplus}
-                      </span>
-                    )}
+              {lastDecisions
+                .slice(-5)
+                .reverse()
+                .map((decision, index) => (
+                  <div key={index} className="border-l-4 border-gray-300 pl-4">
+                    <h3 className="font-semibold text-gray-900">
+                      Day {decision.day}: {decision.problem}
+                    </h3>
+                    <p className="text-gray-700 italic">Solution: {decision.solution}</p>
+                    <p className="text-gray-600">Outcome: {decision.outcome}</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {decision.impact.population !== 0 && (
+                        <span
+                          className={`px-2 py-1 rounded text-sm ${
+                            decision.impact.population > 0
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          👥 {decision.impact.population > 0 ? '+' : ''}
+                          {decision.impact.population}
+                        </span>
+                      )}
+                      {decision.impact.gold !== 0 && (
+                        <span
+                          className={`px-2 py-1 rounded text-sm ${
+                            decision.impact.gold > 0
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          💰 {decision.impact.gold > 0 ? '+' : ''}
+                          {decision.impact.gold}
+                        </span>
+                      )}
+                      {decision.impact.happiness !== 0 && (
+                        <span
+                          className={`px-2 py-1 rounded text-sm ${
+                            decision.impact.happiness > 0
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          😊 {decision.impact.happiness > 0 ? '+' : ''}
+                          {decision.impact.happiness}
+                        </span>
+                      )}
+                      {decision.impact.foodSurplus !== 0 && (
+                        <span
+                          className={`px-2 py-1 rounded text-sm ${
+                            decision.impact.foodSurplus > 0
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          🌾 {decision.impact.foodSurplus > 0 ? '+' : ''}
+                          {decision.impact.foodSurplus}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -258,9 +278,7 @@ export const DemocracyGame: React.FC = () => {
             </button>
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                🗳️ How to Participate
-              </h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">🗳️ How to Participate</h3>
               <ol className="text-left text-blue-800 space-y-2">
                 <li>1. Visit the subreddit r/TheDemocracyGame</li>
                 <li>2. Find the current crisis post</li>
