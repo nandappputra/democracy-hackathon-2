@@ -7,7 +7,7 @@ const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
 const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
 
 // Gemini API configuration
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = 'AIzaSyCIQ6qY5Uca5rYna9U9X7WKMR0rqjU7oRg';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 export const getInitialNationState = (): NationState => ({
