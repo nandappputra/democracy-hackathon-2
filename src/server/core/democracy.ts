@@ -1,7 +1,6 @@
 import { Context, Post } from '@devvit/public-api';
 import { RedisClient } from '@devvit/redis';
 import { GameState, NationState, GameProblem, Decision } from '../../shared/types/democracy';
-import 'dotenv/config';
 
 require('dotenv').config()
 
