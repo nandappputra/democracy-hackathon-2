@@ -5,6 +5,9 @@ const { execSync, exec } = require('child_process');
 const os = require('os');
 const yaml = require('yaml');
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 function generateRandomSuffix(length) {
   const letters = 'abcdefghijklmnopqrstuvwxyz';
   let result = '';
@@ -65,6 +68,16 @@ async function runChecks() {
     message: hasSubreddit
       ? 'Subreddit is configured!'
       : 'Please update YOUR_SUBREDDIT_NAME in the dev:devvit script in package.json',
+  });
+
+  // Check 4: Gemini API Key
+  const hasGeminiKey = !!process.env.GEMINI_API_KEY;
+  checks.push({
+    name: 'Gemini API Key',
+    passed: hasGeminiKey,
+    message: hasGeminiKey
+      ? 'Gemini API key is configured!'
+      : 'Please add GEMINI_API_KEY to your .env file for AI features',
   });
 
   // Print check results
