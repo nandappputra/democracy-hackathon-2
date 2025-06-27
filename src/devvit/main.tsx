@@ -18,6 +18,11 @@ import { defineConfig } from '@devvit/server';
 import { postConfigNew } from '../server/core/post';
 import { preinit } from 'react-dom';
 
+// Configure Devvit to enable HTTP requests for Gemini API
+Devvit.configure({
+  http: true,
+});
+
 defineConfig({
   name: "DZIKRI's DEMOCRACY 3",
   entry: 'index.html',

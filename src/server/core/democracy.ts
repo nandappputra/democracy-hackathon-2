@@ -6,8 +6,8 @@ const GAME_STATE_KEY = 'democracy:game_state';
 const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
 const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
 
-// Gemini API configuration
-const GEMINI_API_KEY = 'AIzaSyCIQ6qY5Uca5rYna9U9X7WKMR0rqjU7oRg';
+// Gemini API configuration - Use environment variable for security
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 export const getInitialNationState = (): NationState => ({
@@ -53,7 +53,8 @@ export const generateProblem = async (
   nationState: NationState,
   lastDecisions: Decision[]
 ): Promise<GameProblem> => {
-  console.log("API Key Kita", GEMINI_API_KEY);
+  console.log("Checking GEMINI_API_KEY availability:", !!GEMINI_API_KEY);
+  
   if (!GEMINI_API_KEY) {
     console.warn('GEMINI_API_KEY not found, using fallback problem generation');
     return generateFallbackProblem(nationState, lastDecisions);
@@ -83,7 +84,8 @@ export const generateProblem = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -93,6 +95,7 @@ export const generateProblem = async (
       throw new Error('No text generated from Gemini API');
     }
 
+    console.log('Gemini generated problem:', generatedText);
     return parseProblemFromGemini(generatedText, nationState);
   } catch (error) {
     console.error('Error generating problem with Gemini:', error);
@@ -239,7 +242,8 @@ export const processSolution = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -249,6 +253,7 @@ export const processSolution = async (
       throw new Error('No text generated from Gemini API');
     }
 
+    console.log('Gemini processed solution:', generatedText);
     return parseDecisionFromGemini(generatedText, solution, currentState, problem);
   } catch (error) {
     console.error('Error processing solution with Gemini:', error);
