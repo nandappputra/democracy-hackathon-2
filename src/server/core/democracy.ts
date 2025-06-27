@@ -6,6 +6,10 @@ const GAME_STATE_KEY = 'democracy:game_state';
 const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
 const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
 
+// Gemini API configuration
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+
 export const getInitialNationState = (): NationState => ({
   population: 100,
   gold: 1000,
@@ -49,8 +53,112 @@ export const generateProblem = async (
   nationState: NationState,
   lastDecisions: Decision[]
 ): Promise<GameProblem> => {
-  // This would integrate with Gemini API in a real implementation
-  // For now, we'll use predefined problems based on state
+  if (!GEMINI_API_KEY) {
+    console.warn('GEMINI_API_KEY not found, using fallback problem generation');
+    return generateFallbackProblem(nationState, lastDecisions);
+  }
+
+  try {
+    const prompt = createProblemGenerationPrompt(nationState, lastDecisions);
+    
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 500,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!generatedText) {
+      throw new Error('No text generated from Gemini API');
+    }
+
+    return parseProblemFromGemini(generatedText, nationState);
+  } catch (error) {
+    console.error('Error generating problem with Gemini:', error);
+    return generateFallbackProblem(nationState, lastDecisions);
+  }
+};
+
+const createProblemGenerationPrompt = (nationState: NationState, lastDecisions: Decision[]): string => {
+  const recentDecisions = lastDecisions.slice(-3).map(d => 
+    `Day ${d.day}: ${d.problem} - Solution: ${d.solution} - Outcome: ${d.outcome}`
+  ).join('\n');
+
+  return `You are the game master for a democracy simulation game. Generate a realistic crisis or challenge for the nation based on the current state.
+
+Current Nation State:
+- Population: ${nationState.population} citizens
+- Gold: ${nationState.gold} coins
+- Happiness: ${nationState.happiness}/100
+- Food Surplus: ${nationState.foodSurplus} units
+- Day: ${nationState.day}
+
+Recent Decisions:
+${recentDecisions || 'None yet'}
+
+Generate a crisis that:
+1. Is appropriate for the current state (e.g., if gold is low, maybe economic issues; if food is low, agricultural problems)
+2. Feels realistic and engaging
+3. Requires citizen input to solve
+4. Has potential for multiple solution approaches
+
+Format your response as JSON:
+{
+  "title": "Crisis Title (max 50 characters)",
+  "description": "Detailed description of the crisis (max 200 characters)"
+}
+
+Only respond with valid JSON, no additional text.`;
+};
+
+const parseProblemFromGemini = (generatedText: string, nationState: NationState): GameProblem => {
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in Gemini response');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    
+    if (!parsed.title || !parsed.description) {
+      throw new Error('Invalid JSON structure from Gemini');
+    }
+
+    return {
+      id: `problem_${nationState.day}_${Date.now()}`,
+      title: parsed.title.substring(0, 50), // Ensure max length
+      description: parsed.description.substring(0, 200), // Ensure max length
+      createdAt: new Date().toISOString(),
+      day: nationState.day,
+    };
+  } catch (error) {
+    console.error('Error parsing Gemini response:', error);
+    throw error;
+  }
+};
+
+const generateFallbackProblem = (nationState: NationState, lastDecisions: Decision[]): GameProblem => {
   const problems = [
     {
       title: 'Economic Crisis',
@@ -101,9 +209,153 @@ export const processSolution = async (
   problem: GameProblem,
   lastDecisions: Decision[]
 ): Promise<Decision> => {
-  // This would integrate with Gemini API in a real implementation
-  // For now, we'll simulate the AI response based on keywords
+  if (!GEMINI_API_KEY) {
+    console.warn('GEMINI_API_KEY not found, using fallback solution processing');
+    return processSolutionFallback(solution, currentState, problem, lastDecisions);
+  }
 
+  try {
+    const prompt = createSolutionProcessingPrompt(solution, currentState, problem, lastDecisions);
+    
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 800,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!generatedText) {
+      throw new Error('No text generated from Gemini API');
+    }
+
+    return parseDecisionFromGemini(generatedText, solution, currentState, problem);
+  } catch (error) {
+    console.error('Error processing solution with Gemini:', error);
+    return processSolutionFallback(solution, currentState, problem, lastDecisions);
+  }
+};
+
+const createSolutionProcessingPrompt = (
+  solution: string,
+  currentState: NationState,
+  problem: GameProblem,
+  lastDecisions: Decision[]
+): string => {
+  const recentDecisions = lastDecisions.slice(-3).map(d => 
+    `Day ${d.day}: ${d.problem} - Solution: ${d.solution} - Impact: Pop ${d.impact.population > 0 ? '+' : ''}${d.impact.population}, Gold ${d.impact.gold > 0 ? '+' : ''}${d.impact.gold}, Happiness ${d.impact.happiness > 0 ? '+' : ''}${d.impact.happiness}, Food ${d.impact.foodSurplus > 0 ? '+' : ''}${d.impact.foodSurplus}`
+  ).join('\n');
+
+  return `You are the game master for a democracy simulation. A citizen has proposed a solution to the current crisis. Evaluate the solution and determine its realistic impact on the nation.
+
+Current Nation State:
+- Population: ${currentState.population} citizens
+- Gold: ${currentState.gold} coins
+- Happiness: ${currentState.happiness}/100 (-100 to +100 scale)
+- Food Surplus: ${currentState.foodSurplus} units
+- Day: ${currentState.day}
+
+Current Crisis: ${problem.title}
+Crisis Description: ${problem.description}
+
+Proposed Solution: "${solution}"
+
+Recent Decision History:
+${recentDecisions || 'None yet'}
+
+Evaluate this solution realistically. Consider:
+1. How well does it address the crisis?
+2. What are the economic costs/benefits?
+3. How will citizens react (happiness impact)?
+4. Are there unintended consequences?
+5. Resource requirements and availability
+
+Provide realistic impact values:
+- Population change: -50 to +20 (deaths/births/migration)
+- Gold change: -1000 to +500 (economic impact)
+- Happiness change: -30 to +30 (citizen satisfaction)
+- Food change: -100 to +100 (food production/consumption)
+
+Format your response as JSON:
+{
+  "outcome": "A detailed description of what happens when this solution is implemented (max 150 characters)",
+  "impact": {
+    "population": 0,
+    "gold": 0,
+    "happiness": 0,
+    "foodSurplus": 0
+  }
+}
+
+Only respond with valid JSON, no additional text.`;
+};
+
+const parseDecisionFromGemini = (
+  generatedText: string,
+  solution: string,
+  currentState: NationState,
+  problem: GameProblem
+): Decision => {
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in Gemini response');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    
+    if (!parsed.outcome || !parsed.impact) {
+      throw new Error('Invalid JSON structure from Gemini');
+    }
+
+    // Validate and clamp impact values
+    const impact = {
+      population: Math.max(-50, Math.min(20, parsed.impact.population || 0)),
+      gold: Math.max(-1000, Math.min(500, parsed.impact.gold || 0)),
+      happiness: Math.max(-30, Math.min(30, parsed.impact.happiness || 0)),
+      foodSurplus: Math.max(-100, Math.min(100, parsed.impact.foodSurplus || 0)),
+    };
+
+    return {
+      day: currentState.day,
+      problem: problem.title,
+      solution,
+      outcome: parsed.outcome.substring(0, 150), // Ensure max length
+      impact,
+    };
+  } catch (error) {
+    console.error('Error parsing Gemini decision response:', error);
+    throw error;
+  }
+};
+
+const processSolutionFallback = async (
+  solution: string,
+  currentState: NationState,
+  problem: GameProblem,
+  lastDecisions: Decision[]
+): Promise<Decision> => {
+  // Fallback to the original keyword-based processing
   const impact = {
     population: 0,
     gold: 0,

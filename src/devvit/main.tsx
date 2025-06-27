@@ -19,7 +19,7 @@ import { postConfigNew } from '../server/core/post';
 import { preinit } from 'react-dom';
 
 defineConfig({
-  name: "NANDA's DEMOCRACY 3",
+  name: "DZIKRI's DEMOCRACY 3",
   entry: 'index.html',
   height: 'tall',
   menu: { enable: false },
@@ -51,7 +51,7 @@ export const Preview: Devvit.BlockComponent<{ text?: string }> = ({
 // TODO: Remove this when defineConfig allows webhooks before post creation
 
 Devvit.addSchedulerJob({
-  name: '[Nanda V3] process-daily-decision',
+  name: '[dzikri V3] process-daily-decision',
   onRun: async (event, context) => {
     const { reddit, redis } = context;
 
@@ -137,7 +137,7 @@ Devvit.addSchedulerJob({
 
 // Menu item to start a new game
 Devvit.addMenuItem({
-  label: '[Nanda V3] start new game!',
+  label: '[dzikri V3] start new game!',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
@@ -168,7 +168,7 @@ Devvit.addMenuItem({
 
       // Schedule daily processing (every 24 hours)
       await context.scheduler.runJob({
-        name: '[Nanda V3] process-daily-decision',
+        name: '[dzikri V3] process-daily-decision',
         runAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
       });
 
@@ -185,7 +185,7 @@ Devvit.addMenuItem({
 
 // Menu item to manually process current day (for testing)
 Devvit.addMenuItem({
-  label: '[Nanda V3] Process Current Day',
+  label: '[dzikri V3] Process Current Day',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
@@ -193,7 +193,7 @@ Devvit.addMenuItem({
 
     try {
       await scheduler.runJob({
-        name: '[Nanda V3] process-daily-decision',
+        name: '[dzikri V3] process-daily-decision',
         runAt: new Date(Date.now() + 1000), // Run in 1 second
       });
 
@@ -209,7 +209,7 @@ Devvit.addMenuItem({
 
 // Menu item to create a webview post
 Devvit.addMenuItem({
-  label: '[Nanda V3] Create Game Dashboard',
+  label: '[dzikri V3] Create Game Dashboard',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
