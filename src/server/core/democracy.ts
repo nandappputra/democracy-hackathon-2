@@ -2,8 +2,6 @@ import { Context, Post } from '@devvit/public-api';
 import { RedisClient } from '@devvit/redis';
 import { GameState, NationState, GameProblem, Decision } from '../../shared/types/democracy';
 
-require('dotenv').config()
-
 const GAME_STATE_KEY = 'democracy:game_state';
 const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
 const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
