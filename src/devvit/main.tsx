@@ -1,4 +1,4 @@
-import { Devvit, Post } from '@devvit/public-api';
+import { Comment, Devvit, Post } from '@devvit/public-api';
 import { getRedis } from '@devvit/redis';
 import {
   getGameState,
@@ -8,12 +8,15 @@ import {
   applyDecisionImpact,
   formatGameStateForPost,
   getInitialGameState,
+  saveProblemPostId,
+  getProblemPostId,
 } from '../server/core/democracy';
 
 // Side effect import to bundle the server. The /index is required for server splitting.
 import '../server/index';
 import { defineConfig } from '@devvit/server';
 import { postConfigNew } from '../server/core/post';
+import { preinit } from 'react-dom';
 
 defineConfig({
   name: "NANDA's DEMOCRACY 3",
@@ -62,39 +65,17 @@ Devvit.addSchedulerJob({
 
       // Get the current subreddit
       const subreddit = await reddit.getCurrentSubreddit();
-
-      // Find posts from the last 24 hours that contain the current problem
-      const posts = await reddit
-        .getSubredditPostsByNew({
-          subredditName: subreddit.name,
-          limit: 50,
-        })
-        .all();
-
-      // Find the current problem post
-      const problemPost = posts.find(
-        (post) =>
-          post.title.includes(gameState.currentProblem!.title) ||
-          post.body?.includes(gameState.currentProblem!.id)
-      );
-
-      if (!problemPost) {
-        console.log('Could not find current problem post');
-        return;
-      }
-
-      // Get comments on the problem post
-      const comments = await problemPost.comments.all();
-
-      if (comments.length === 0) {
-        console.log('No solutions submitted');
-        return;
-      }
+      const lastProblemPostId = await getProblemPostId(redis);
+      console.log('LAST ID IS', lastProblemPostId);
+      const postAndComments = subreddit.getCommentsAndPostsByIds([lastProblemPostId]);
+      const originalPost = (await postAndComments.all())[0] as Post;
+      const allComments = await originalPost.comments.all();
+      console.log('HERE ARE THE COMMENTS', allComments);
+      console.log('HERE IS THE ID:', allComments[0]?.body);
 
       // Find the most upvoted comment (solution)
-      const topComment = comments
-        .filter((comment) => !comment.isStickied && !comment.distinguishedBy)
-        .sort((a, b) => b.score - a.score)[0];
+      const topComment = allComments.sort((a, b) => b.score - a.score)[0];
+      console.log(topComment);
 
       if (!topComment || !topComment.body) {
         console.log('No valid solution found');
@@ -137,13 +118,15 @@ Devvit.addSchedulerJob({
       // Create a new post with the updated state
       const postContent = formatGameStateForPost(gameState);
 
-      await reddit.submitPost({
+      const post = await reddit.submitPost({
         title: gameState.nationState.isGameOver
           ? `💀 GAME OVER - Day ${gameState.nationState.day - 1} - The Nation Has Fallen!`
           : `🏛️ Day ${gameState.nationState.day} - ${gameState.currentProblem?.title || 'New Day'}`,
         text: postContent,
         subredditName: subreddit.name,
       });
+
+      await saveProblemPostId(redis, post);
 
       console.log(`Processed day ${gameState.lastProcessedDay}, new state saved`);
     } catch (error) {
@@ -180,6 +163,8 @@ Devvit.addMenuItem({
         subredditName: subreddit.name,
         preview: <Preview text="New Democracy Game Started!" />,
       });
+
+      await saveProblemPostId(redis, post);
 
       // Schedule daily processing (every 24 hours)
       await context.scheduler.runJob({

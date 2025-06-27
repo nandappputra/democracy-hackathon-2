@@ -1,9 +1,10 @@
-import { Context } from '@devvit/public-api';
+import { Context, Post } from '@devvit/public-api';
 import { RedisClient } from '@devvit/redis';
 import { GameState, NationState, GameProblem, Decision } from '../../shared/types/democracy';
 
 const GAME_STATE_KEY = 'democracy:game_state';
 const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
+const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
 
 export const getInitialNationState = (): NationState => ({
   population: 100,
@@ -34,6 +35,14 @@ export const getGameState = async (redis: RedisClient): Promise<GameState> => {
 
 export const setGameState = async (redis: RedisClient, state: GameState): Promise<void> => {
   await redis.set(GAME_STATE_KEY, JSON.stringify(state));
+};
+
+export const saveProblemPostId = async (redis: RedisClient, post: Post): Promise<void> => {
+  await redis.set(CURRENT_PROBLEM_POST_ID_KEY, post.id);
+};
+
+export const getProblemPostId = async (redis: RedisClient): Promise<string | undefined> => {
+  return await redis.get(CURRENT_PROBLEM_POST_ID_KEY);
 };
 
 export const generateProblem = async (
