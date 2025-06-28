@@ -4,7 +4,9 @@ import { GameState, NationState, GameProblem, Decision } from '../../shared/type
 
 const GAME_STATE_KEY = 'democracy:game_state';
 const CURRENT_PROBLEM_KEY = 'democracy:current_problem';
+
 const CURRENT_PROBLEM_POST_ID_KEY = 'democracy:current_problem_post_id_key';
+const CURRENT_CRON_JOB_ID_KEY = 'democracy:cron_job_id';
 
 // Gemini API configuration - Use environment variable for security
 const GEMINI_API_KEY = 'AIzaSyCIQ6qY5Uca5rYna9U9X7WKMR0rqjU7oRg';
@@ -47,6 +49,14 @@ export const saveProblemPostId = async (redis: RedisClient, post: Post): Promise
 
 export const getProblemPostId = async (redis: RedisClient): Promise<string | undefined> => {
   return await redis.get(CURRENT_PROBLEM_POST_ID_KEY);
+};
+
+export const saveCronJobId = async (redis: RedisClient, post: Post): Promise<void> => {
+  await redis.set(CURRENT_CRON_JOB_ID_KEY, post.id);
+};
+
+export const getCronJobId = async (redis: RedisClient): Promise<string | undefined> => {
+  return await redis.get(CURRENT_CRON_JOB_ID_KEY);
 };
 
 export const generateProblem = async (

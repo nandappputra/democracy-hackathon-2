@@ -10,6 +10,8 @@ import {
   getInitialGameState,
   saveProblemPostId,
   getProblemPostId,
+  saveCronJobId,
+  getCronJobId,
 } from '../server/core/democracy';
 
 // Side effect import to bundle the server. The /index is required for server splitting.
@@ -172,10 +174,12 @@ Devvit.addMenuItem({
       await saveProblemPostId(redis, post);
 
       // Schedule daily processing (every 24 hours)
-      await context.scheduler.runJob({
+      const job = await context.scheduler.runJob({
         name: '[dzikri V3] process-daily-decision',
-        runAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        cron: '0 0 * * *'
       });
+
+      await saveCronJobId(redis, job);
 
       ui.showToast({ text: 'Democracy Game started! Daily processing scheduled.' });
       ui.navigateTo(post.url);
@@ -203,6 +207,27 @@ Devvit.addMenuItem({
       });
 
       ui.showToast({ text: 'Processing current day...' });
+    } catch (error) {
+      console.error('Error processing day:', error);
+      ui.showToast({
+        text: `Error processing day: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+    }
+  },
+});
+
+Devvit.addMenuItem({
+  label: '[dzikri V3] Stop game',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { ui, scheduler, redis } = context;
+
+    try {
+      const currentGameJobId = await getCronJobId(redis) as string;
+      await scheduler.cancelJob(currentGameJobId)
+
+      ui.showToast({ text: `Stopped scheduler: ${currentGameJobId}` });
     } catch (error) {
       console.error('Error processing day:', error);
       ui.showToast({

@@ -63,31 +63,6 @@ export const DemocracyGame: React.FC = () => {
     }
   };
 
-  const startNewGame = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/game/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        setGameState(data.gameState);
-        setError(null);
-      } else {
-        setError(data.message || 'Failed to start new game');
-      }
-    } catch (err) {
-      setError('Network error occurred');
-      console.error('Error starting new game:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchGameState();
   }, []);
@@ -269,13 +244,9 @@ export const DemocracyGame: React.FC = () => {
         {/* Game Controls */}
         <div className="text-center">
           {!gameStarted || nationState.isGameOver ? (
-            <button
-              onClick={startNewGame}
-              disabled={loading}
-              className="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Starting...' : nationState.isGameOver ? 'Start New Game' : 'Start Game'}
-            </button>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">🗳️ New game starting soon!</h3>
+            </div>
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-blue-900 mb-2">🗳️ How to Participate</h3>
