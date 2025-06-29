@@ -236,32 +236,4 @@ Devvit.addMenuItem({
   },
 });
 
-// Menu item to create a webview post
-Devvit.addMenuItem({
-  label: '[dzikri V3] Create Game Dashboard',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-
-    try {
-      const subreddit = await reddit.getCurrentSubreddit();
-
-      const post = await reddit.submitPost({
-        title: '🏛️ Democracy Game Dashboard',
-        subredditName: subreddit.name,
-        preview: <Preview text="Interactive Game Dashboard" />,
-      });
-
-      ui.showToast({ text: 'Game dashboard created!' });
-      ui.navigateTo(post.url);
-    } catch (error) {
-      console.error('Error creating dashboard:', error);
-      ui.showToast({
-        text: `Error creating dashboard: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      });
-    }
-  },
-});
-
 export default Devvit;
