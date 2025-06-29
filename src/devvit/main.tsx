@@ -26,7 +26,7 @@ Devvit.configure({
 });
 
 defineConfig({
-  name: "DZIKRI's DEMOCRACY 3",
+  name: "DEMOCRACY",
   entry: 'index.html',
   height: 'tall',
   menu: { enable: false },
