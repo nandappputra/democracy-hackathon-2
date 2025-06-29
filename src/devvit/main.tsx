@@ -161,14 +161,13 @@ Devvit.addMenuItem({
 
       await setGameState(redis, gameState);
 
-      // Create initial post
+      // Create initial post as regular text post (no preview/webview)
       const postContent = formatGameStateForPost(gameState);
 
       const post = await reddit.submitPost({
         title: `🏛️ Day 1 - ${firstProblem.title} - Democracy Game Begins!`,
         text: postContent,
         subredditName: subreddit.name,
-        preview: <Preview text="New Democracy Game Started!" />,
       });
 
       await saveProblemPostId(redis, post);
