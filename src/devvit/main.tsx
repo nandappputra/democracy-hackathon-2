@@ -201,7 +201,7 @@ Devvit.addMenuItem({
 
     try {
       await scheduler.runJob({
-        name: '[dzikri V3] process-daily-decision',
+        name: 'process-daily-decision',
         runAt: new Date(Date.now() + 1000), // Run in 1 second
       });
 
