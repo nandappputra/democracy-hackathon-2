@@ -5,6 +5,8 @@
     { "path": "./src/devvit" },
     { "path": "./src/client" },
     { "path": "./src/shared" },
-    { "path": "./src/server" }
+    { "path": "./src/server" },
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
   ]
 }
