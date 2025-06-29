@@ -338,7 +338,7 @@ const parseDecisionFromGemini = (
       throw new Error('No JSON found in Gemini response');
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0].replace('+', ''));
     
     if (!parsed.outcome || !parsed.impact) {
       throw new Error('Invalid JSON structure from Gemini');
