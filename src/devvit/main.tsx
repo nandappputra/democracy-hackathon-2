@@ -144,7 +144,7 @@ Devvit.addSchedulerJob({
 
 // Menu item to start a new game
 Devvit.addMenuItem({
-  label: '[dzikri V3] start new game!',
+  label: 'Start new game!',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
