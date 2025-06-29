@@ -174,7 +174,7 @@ Devvit.addMenuItem({
 
       // Schedule daily processing (every 24 hours)
       const job = await context.scheduler.runJob({
-        name: '[dzikri V3] process-daily-decision',
+        name: 'process-daily-decision',
         cron: '0 0 * * *'
       });
 
