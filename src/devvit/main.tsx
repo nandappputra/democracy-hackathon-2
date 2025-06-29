@@ -193,7 +193,7 @@ Devvit.addMenuItem({
 
 // Menu item to manually process current day (for testing)
 Devvit.addMenuItem({
-  label: '[dzikri V3] Process Current Day',
+  label: 'Process Current Day',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
