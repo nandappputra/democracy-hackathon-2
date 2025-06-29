@@ -216,7 +216,7 @@ Devvit.addMenuItem({
 });
 
 Devvit.addMenuItem({
-  label: '[dzikri V3] Stop game',
+  label: 'Stop game',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
