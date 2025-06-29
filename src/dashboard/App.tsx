@@ -1,4 +1,3 @@
-import React from 'react';
 import { Users, MessageSquare, Clock, TrendingUp, ArrowRight, Youtube, ExternalLink, Brain, Zap, BarChart3, Cpu } from 'lucide-react';
 import CountdownTimer from './components/CountdownTimer';
 
