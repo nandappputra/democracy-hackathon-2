@@ -58,7 +58,7 @@ export const Preview: Devvit.BlockComponent<{ text?: string }> = ({
 // TODO: Remove this when defineConfig allows webhooks before post creation
 
 Devvit.addSchedulerJob({
-  name: '[dzikri V3] process-daily-decision',
+  name: 'process-daily-decision',
   onRun: async (event, context) => {
     const { reddit, redis } = context;
 
