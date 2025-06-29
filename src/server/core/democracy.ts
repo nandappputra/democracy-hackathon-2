@@ -462,9 +462,8 @@ export const applyDecisionImpact = (state: NationState, decision: Decision): Nat
 export const formatGameStateForPost = (gameState: GameState): string => {
   const { nationState, currentProblem, lastDecisions } = gameState;
 
-  let content = `# 🏛️ The Nation of Democracy - Day ${nationState.day}\n\n`;
+  let content = `## 📊 Current State\n`;
 
-  content += `## 📊 Current State\n`;
   content += `- **Population**: ${nationState.population} citizens\n`;
   content += `- **Gold**: ${nationState.gold} coins\n`;
   content += `- **Happiness**: ${nationState.happiness}/100\n`;
